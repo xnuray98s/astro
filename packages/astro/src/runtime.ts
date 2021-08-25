@@ -24,6 +24,7 @@ import { createManifest } from './manifest/create.js';
 import { nodeBuiltinsMap } from './node_builtins.js';
 import { configureSnowpackLogger } from './snowpack-logger.js';
 import { convertMatchToLocation, validateGetStaticPathsModule, validateGetStaticPathsResult } from './util.js';
+import fetch from 'node-fetch';
 
 const { CompileError } = parser;
 
@@ -384,6 +385,10 @@ export async function createRuntime(astroConfig: AstroConfig, { mode, logging }:
   let snowpack: SnowpackDevServer;
   const timer: Record<string, number> = {};
   const resolvePackageUrl = async (pkgName: string) => snowpack.getUrlForPackage(pkgName);
+
+  if(!('fetch' in globalThis)) {
+    Reflect.set(globalThis, 'fetch', fetch);
+  }
 
   timer.backend = performance.now();
   const {
