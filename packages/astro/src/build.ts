@@ -19,6 +19,7 @@ import { getDistPath, stopTimer } from './build/util.js';
 import type { LogOptions } from './logger';
 import { debug, defaultLogDestination, defaultLogLevel, error, info, warn } from './logger.js';
 import { createRuntime } from './runtime.js';
+import matchSrces from 'srcset-parse/dist/index.js';
 
 const defaultLogging: LogOptions = {
   level: defaultLogLevel,
@@ -29,19 +30,6 @@ const defaultLogging: LogOptions = {
 function isRemoteOrEmbedded(url: string) {
   return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//') || url.startsWith('data:');
 }
-
-/**
- * This function taken from https://github.com/molefrog/srcset-parse as unable
- * to add it as a working dependency (don't know why.)
- * RegExp used below also from same project.
- */
- const matchSrces = (str: string, regex: RegExp): RegExpExecArray[] => {
-  let match = null,
-    result = [];
-
-  while ((match = regex.exec(str)) !== null) result.push(match);
-  return result;
-};
 
 /** The primary build action */
 export async function build(astroConfig: AstroConfig, logging: LogOptions = defaultLogging): Promise<0 | 1> {
@@ -342,12 +330,12 @@ export function findDeps(html: string, { astroConfig, srcPath }: { astroConfig: 
 
   $('img[srcset]').each((_i, el) => {
     const srcset = $(el).attr('srcset') || '';
-    // using matchSrces (see above) as built-in matchAll
-    // is not compatible with project.
-    const srces = matchSrces(srcset, /(\S*[^,\s])(\s+([\d.]+)(x|w))?/g)
+
+    const srces = matchSrces(srcset);
+    console.debug(srces);
     for (const src of srces) {
-      if (!isRemoteOrEmbedded(src[1])) {
-        pageDeps.images.add(getDistPath(src[1], { astroConfig, srcPath }));
+      if (!isRemoteOrEmbedded(src.url)) {
+        pageDeps.images.add(getDistPath(src.url, { astroConfig, srcPath }));
       }
     }
   });
@@ -355,12 +343,12 @@ export function findDeps(html: string, { astroConfig, srcPath }: { astroConfig: 
   // Add in srcset check for <source>
   $('source[srcset]').each((_i, el) => {
     const srcset = $(el).attr('srcset') || '';
-    // using matchSrces (see above) as built-in matchAll
-    // is not compatible with project.
-    const srces = matchSrces(srcset, /(\S*[^,\s])(\s+([\d.]+)(x|w))?/g)
+
+    const srces = matchSrces(srcset);
+    console.debug(srces);
     for (const src of srces) {
-      if (!isRemoteOrEmbedded(src[1])) {
-        pageDeps.images.add(getDistPath(src[1], { astroConfig, srcPath }));
+      if (!isRemoteOrEmbedded(src.url)) {
+        pageDeps.images.add(getDistPath(src.url, { astroConfig, srcPath }));
       }
     }
   });
