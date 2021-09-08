@@ -34,6 +34,12 @@ Components('Allows Components defined in frontmatter', async ({ runtime }) => {
   assert.equal($('h1').length, 1);
 });
 
+Components('Disallows bare relative imports', async ({ runtime }) => {
+  const result = await runtime.load('/error-on-bare-relative-import');
+  assert.equal(result.statusCode, 500);
+  assert.equal(result.error, `Error: import BareRelativeComponent from "../components/Components.js";`);
+});
+
 Components('Still throws an error for undefined components', async ({ runtime }) => {
   const result = await runtime.load('/undefined-component');
   assert.equal(result.statusCode, 500);
