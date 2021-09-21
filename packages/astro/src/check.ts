@@ -5,6 +5,7 @@ import glob from 'fast-glob';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 import * as fs from 'fs';
+import { printer } from './placebo/index.js';
 
 async function openAllDocuments(
   workspaceUri: URL,
@@ -81,6 +82,30 @@ export async function check(astroConfig: AstroConfig) {
     warnings: 0
   };
 
+  const diags = diagnostics.flatMap(diag => diag.diagnostics.map(d => {
+    let startOffset = offsetAt({ line: d.range.start.line, character: d.range.start.character }, diag.text);
+    let endOffset = offsetAt({ line: d.range.end.line, character: d.range.end.character }, diag.text);
+    let length = endOffset - startOffset;
+
+    return {
+      severity: d.severity,
+      file: diag.filePath,
+      message: d.message,
+      loc: {
+        row: d.range.start.line + 1,
+        col: d.range.start.character + 1,
+        len: length
+      }
+    };
+  })).filter(d => d.severity === DiagnosticSeverity.Error);
+
+  const sources = new Map(diagnostics.map(d => [d.filePath, d.text]));
+  debugger;
+  printer(sources, diags);
+
+  /*
+
+
   diagnostics.forEach(diag => {
     diag.diagnostics.forEach(d => {
       switch(d.severity) {
@@ -106,7 +131,9 @@ export async function check(astroConfig: AstroConfig) {
     });
   });
 
+
   console.log(result);
+  */
   const exitCode = result.errors ? 1 : 0;
   return exitCode;
 }
