@@ -113,6 +113,30 @@ class AstroBuilder {
     );
     const input = await Promise.all(allPages);
 
+    // TODO: We want to bundle our JavaScript using the following as entrypoints:
+    //   1. Frontend Components
+    //   2. scripts with the `hoist` attribute
+    // 
+    // The "build with vite" step should do the following:
+    //   1. collect all "entrypoints" (defined above) used across the entire site
+    //   2. bundle them using something like `rollupOptions.input: {...}` (passing entrypoint JS files directly to this)
+    //   3. vite.build() creates a nice manifest that you can use
+    //   4. use manfiest to map source scripts to hashed built scripts
+    //   5. make sure all <script> src are properly pointing to hashed files
+    //
+    // Suggestions:
+    //   - Refactor ssr() to not render to string and instead return the result object. 
+    //     It would be much better* to map over an array of result objects, collect all
+    //     the `result.script` entrypoints, "build with Vite" using those entrypoints as
+    //     `rollupOptions.input`, then rewrite those `result.script` entrypoints to point
+    //     to the new built result files. You could then render result object -> string later.
+    //   * I say "better" above because we have run into trouble in the past using
+    //     HTML as a data structure. At this point an HTML string should be treated as the 
+    //     low-fidelity build result string that, meant for the final output directory. 
+    //     Thanks to the `next` refactoring, we have a high-fidelty result object to play with! 
+    //     We should use that for as long as possible, and only render to an HTML string at the very end.
+
+
     // 3. build with Vite
     await vite.build({
       logLevel: 'error',
