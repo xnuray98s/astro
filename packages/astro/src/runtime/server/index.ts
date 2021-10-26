@@ -1,4 +1,4 @@
-import type { AstroComponentMetadata, Renderer } from '../../@types/astro-core';
+import type { AstroConfig, AstroComponentMetadata, Renderer } from '../../@types/astro-core';
 import type { SSRResult } from '../../@types/astro-runtime';
 import type { TopLevelAstro } from '../../@types/astro-runtime';
 
@@ -272,13 +272,17 @@ function createFetchContentFn(url: URL) {
   return fetchContent;
 }
 
-export function createAstro(fileURLStr: string, site: string): TopLevelAstro {
+interface CreateAstroOptions {
+  config: AstroConfig;
+}
+
+export function createAstro(fileURLStr: string, { config }: CreateAstroOptions): TopLevelAstro {
   const url = new URL(fileURLStr);
   const fetchContent = createFetchContentFn(url) as unknown as TopLevelAstro['fetchContent'];
   return {
     // TODO I think this is no longer needed.
     isPage: false,
-    site: new URL(site),
+    site: new URL(config.site),
     fetchContent,
     resolve(...segments) {
       return segments.reduce((u, segment) => new URL(segment, u), url).pathname;
