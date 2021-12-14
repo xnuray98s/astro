@@ -98,8 +98,8 @@ export default function configAliasVitePlugin(astroConfig: { projectRoot?: URL; 
 
           let resolvedAliasedId;
           try {
-          /** Resolved ID conditionally handled by any other resolver. (this also gives priority to all other resolvers) */
-          resolvedAliasedId = await this.resolve(aliasedSourceId, importer, { skipSelf: true, ...options });
+            /** Resolved ID conditionally handled by any other resolver. (this also gives priority to all other resolvers) */
+            resolvedAliasedId = await this.resolve(aliasedSourceId, importer, { skipSelf: true, ...options });
           } catch (e) {}
 
           // if the existing resolvers find the file, return that resolution
