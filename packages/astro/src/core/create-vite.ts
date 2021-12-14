@@ -19,6 +19,7 @@ const ALWAYS_EXTERNAL = new Set([
   '@sveltejs/vite-plugin-svelte',
   '@proload/core',
   '@proload/core/lib/esm/requireOrImport.mjs',
+  '@babel/core',
   'serialize-javascript',
   'micromark-util-events-to-acorn',
   'node-fetch',
