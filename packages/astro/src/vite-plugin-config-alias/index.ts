@@ -81,8 +81,11 @@ export default function configAliasVitePlugin(astroConfig: { projectRoot?: URL; 
     name: '@astrojs/vite-plugin-config-alias',
     enforce: 'pre',
     async resolveId(sourceId: string, importer, options) {
-      /** Resolved ID conditionally handled by any other resolver. (this gives priority to all other resolvers) */
-      const resolvedId = await this.resolve(sourceId, importer, { skipSelf: true, ...options });
+      let resolvedId;
+      try {
+        /** Resolved ID conditionally handled by any other resolver. (this gives priority to all other resolvers) */
+        resolvedId = await this.resolve(sourceId, importer, { skipSelf: true, ...options });
+      } catch (e) {}
 
       // if any other resolver handles the file, return that resolution
       if (resolvedId) return resolvedId;
@@ -93,8 +96,11 @@ export default function configAliasVitePlugin(astroConfig: { projectRoot?: URL; 
           /** Processed Source ID with our alias applied. */
           const aliasedSourceId = sourceId.replace(alias.find, alias.replacement);
 
+          let resolvedAliasedId;
+          try {
           /** Resolved ID conditionally handled by any other resolver. (this also gives priority to all other resolvers) */
-          const resolvedAliasedId = await this.resolve(aliasedSourceId, importer, { skipSelf: true, ...options });
+          resolvedAliasedId = await this.resolve(aliasedSourceId, importer, { skipSelf: true, ...options });
+          } catch (e) {}
 
           // if the existing resolvers find the file, return that resolution
           if (resolvedAliasedId) return resolvedAliasedId;
