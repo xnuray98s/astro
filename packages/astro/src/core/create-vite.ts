@@ -10,7 +10,6 @@ import astroPostprocessVitePlugin from '../vite-plugin-astro-postprocess/index.j
 import configAliasVitePlugin from '../vite-plugin-config-alias/index.js';
 import markdownVitePlugin from '../vite-plugin-markdown/index.js';
 import jsxVitePlugin from '../vite-plugin-jsx/index.js';
-import fetchVitePlugin from '../vite-plugin-fetch/index.js';
 import { resolveDependency } from './util.js';
 
 const require = createRequire(import.meta.url);
@@ -38,9 +37,9 @@ const ALWAYS_EXTERNAL = new Set([
 export type ViteConfigWithSSR = vite.InlineConfig & { ssr?: { external?: string[]; noExternal?: string[] } };
 
 interface CreateViteOptions {
-  astroConfig: AstroConfig;
-  devServer?: AstroDevServer;
-  logging: LogOptions;
+	astroConfig: AstroConfig;
+	devServer?: AstroDevServer;
+	logging: LogOptions;
 }
 
 /** Return a common starting point for all Vite actions */
@@ -55,12 +54,11 @@ export async function createVite(inlineConfig: ViteConfigWithSSR, { astroConfig,
       exclude: [...ALWAYS_EXTERNAL],
     },
     plugins: [
-      configAliasVitePlugin({ config: astroConfig }),
-      astroVitePlugin({ config: astroConfig, devServer }),
-      markdownVitePlugin({ config: astroConfig, devServer }),
-      jsxVitePlugin({ config: astroConfig, logging }),
-      astroPostprocessVitePlugin({ config: astroConfig, devServer }),
-      fetchVitePlugin(),
+			configAliasVitePlugin({ config: astroConfig }),
+			astroVitePlugin({ config: astroConfig, devServer }),
+			markdownVitePlugin({ config: astroConfig, devServer }),
+			jsxVitePlugin({ config: astroConfig, logging }),
+			astroPostprocessVitePlugin({ config: astroConfig, devServer }),
     ],
     publicDir: fileURLToPath(astroConfig.public),
     root: fileURLToPath(astroConfig.projectRoot),
@@ -80,26 +78,26 @@ export async function createVite(inlineConfig: ViteConfigWithSSR, { astroConfig,
     },
   };
 
-  // Add in Astro renderers, which will extend the base config
-  for (const name of astroConfig.renderers) {
-    try {
-      const { default: renderer } = await import(resolveDependency(name, astroConfig));
-      if (!renderer) continue;
-      // if a renderer provides viteConfig(), call it and pass in results
-      if (renderer.viteConfig) {
-        if (typeof renderer.viteConfig !== 'function') {
-          throw new Error(`${name}: viteConfig(options) must be a function! Got ${typeof renderer.viteConfig}.`);
-        }
-        const rendererConfig = await renderer.viteConfig({ mode: inlineConfig.mode, command: inlineConfig.mode === 'production' ? 'build' : 'serve' }); // is this command true?
-        viteConfig = vite.mergeConfig(viteConfig, rendererConfig) as vite.InlineConfig;
-      }
-    } catch (err) {
-      throw new Error(`${name}: ${err}`);
-    }
-  }
+	// Add in Astro renderers, which will extend the base config
+	for (const name of astroConfig.renderers) {
+		try {
+			const { default: renderer } = await import(resolveDependency(name, astroConfig));
+			if (!renderer) continue;
+			// if a renderer provides viteConfig(), call it and pass in results
+			if (renderer.viteConfig) {
+				if (typeof renderer.viteConfig !== 'function') {
+					throw new Error(`${name}: viteConfig(options) must be a function! Got ${typeof renderer.viteConfig}.`);
+				}
+				const rendererConfig = await renderer.viteConfig({ mode: inlineConfig.mode, command: inlineConfig.mode === 'production' ? 'build' : 'serve' }); // is this command true?
+				viteConfig = vite.mergeConfig(viteConfig, rendererConfig) as vite.InlineConfig;
+			}
+		} catch (err) {
+			throw new Error(`${name}: ${err}`);
+		}
+	}
 
-  // Add in user settings last, followed by any Vite configuration passed in from the parent function (overrides)
-  viteConfig = vite.mergeConfig(viteConfig, astroConfig.vite || {}); // merge in Vite config from astro.config.mjs
-  viteConfig = vite.mergeConfig(viteConfig, inlineConfig); // merge in inline Vite config
-  return viteConfig;
+	// Add in user settings last, followed by any Vite configuration passed in from the parent function (overrides)
+	viteConfig = vite.mergeConfig(viteConfig, astroConfig.vite || {}); // merge in Vite config from astro.config.mjs
+	viteConfig = vite.mergeConfig(viteConfig, inlineConfig); // merge in inline Vite config
+	return viteConfig;
 }
